@@ -1,0 +1,262 @@
+<!doctype html>
+<html>
+    <head>
+        <title>
+            Bustr - Site Monitor
+        </title>
+        <link
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+            crossorigin="anonymous" />
+    </head>
+
+    <body>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        BUSTr
+                    </a>
+                </div>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="$('#password_modal').modal('show')">Passwords</a></li>
+                            <li><a href="#" onclick="$('#email_settings_modal').modal('show')">Email</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#" onclick="$('#recipients_modal').modal('show')">Recipients</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <h3>
+                        Bezirgan
+                    </h3>
+                </div>
+            </div>
+
+
+            {% if power_status == False %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="jumbotron warning">
+                            <h3>
+                                NO POWER!
+                            </h3>
+                            <h4>
+                                Power
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="jumbotron warning">
+                            <h3>
+                                OPERATIONAL
+                            </h3>
+                            <h4>
+                                Power
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if errors %}
+                {% for error in errors %}
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <strong>Error!</strong> {{ error }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <strong>Success:</strong> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+        </div>
+
+         <div class="modal fade" tabindex="-1" id="recipients_modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Notification Recipients</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group recipients">
+                            {% for recipient in config.get('recipients', []) %}
+                                <form method="post" action="{{url_for('remove_recipient')}}">
+                                    <input
+                                        type="email"
+                                        class="form-control"
+                                        name="recipient"
+                                        placeholder="Recipients Email Address"
+                                        value="{{recipient}}">
+                                    <button type="submit" class="btn btn-default btn-xs">
+                                        Remove
+                                    </button>
+                                </form>
+                            {% endfor %}
+                            <form method="post" action="{{url_for('edit_recipients')}}">
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    id="new_recipient"
+                                    name="new_recipient"
+                                    placeholder="Recipients Email Address"/>
+                                <button class="btn btn-default btn-xs" onclick="window.addRecipient" id="add_recipient">
+                                    Add Recipient
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" onclick="window.saveRecipients" class="btn btn-default">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" tabindex="-1" id="password_modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Password Settings</h4>
+                    </div>
+                    <form method="post" action="{{url_for('change_password')}}">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="current_password">Current Password</label>
+                                <input type="password" class="form-control" name="current_password" placeholder="Current password">
+                            </div>
+                            <div class="form-group">
+                                <label for="new_password">New Password</label>
+                                <input type="password" class="form-control" name="new_password" placeholder="New Password">
+                            </div>
+                            <div class="form-group">
+                            <label for="new_password_confirm">Confirm New Password</label>
+                                <input type="password" class="form-control" name="new_password_confirm" placeholder="Confirm New Password">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-default">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" tabindex="-1" id="email_settings_modal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Password Settings</h4>
+                    </div>
+                    <form method="post" action="{{url_for('change_email_settings')}}">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="mail_host">SMTP Host</label>
+                                <input type="text" class="form-control" name="mail_host" placeholder="SMTP Host" value="{{config.get('mailer_host')}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="mail_port">Mail Port</label>
+                                <input type="text" class="form-control" name="mail_port" placeholder="Mail port" value="{{config.get('mailer_port')}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="mail_use_tls">Use TLS</label>
+                                <input type="checkbox" class="form-control" name="mail_use_tls" value="tls_enabled" {% if config.get('mailer_use_tls', False) == True %} checked=checked {% endif %}>
+                            </div>
+                            <div class="form-group">
+                                <label for="mail_use_ssl">Use SSL</label>
+                                <input type="checkbox" class="form-control" name="mail_use_ssl" value="ssl_enabled" {% if config.get('mailer_use_ssl', False) == True %} checked=checked {% endif %}>
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" name="username" value="{{config.get('mailer_sender')}}">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" name="password" value="config.get('mailer_password')">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-default">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+        <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+
+        <script>
+
+            window.addRecipient = function (e) {
+                $.ajax({
+                    url: '/edit_recipients',
+                    method: 'POST',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        email: $('#new_recipient').val(),
+                    }),
+                    processData: false,
+                });
+            };
+
+            window.removeRecipient = function (_recipient) {
+                console.log(_recipient);
+                $.ajax({
+                    url: '/edit_recipients',
+                    method: 'DELETE',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        email: _recipient,
+                    }),
+                    processData: false,
+                });
+            };
+
+            window.saveRecipients = function (e) {
+                var _recipients = [];
+                $('#recipients_modal').find('input').forEach(function(_el) {
+                    _recipients.push($(_el).val());
+                });
+                $('#recipients_array_field').val(_recipients);
+                $('#recipients_form').submit();
+            };
+
+        </script>
+    </body>
+</html>
+
