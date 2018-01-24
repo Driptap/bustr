@@ -10,5 +10,7 @@ Named after the cutest Alsation puppy, Buster.
 
 
 ##### RUN
+```
 pip install -r requirements.txt
 python server.py
+```
